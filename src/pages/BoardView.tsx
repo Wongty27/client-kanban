@@ -9,8 +9,6 @@ import { Task } from "@/types";
 import { Input } from "@/components/ui/input";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { attachClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 interface BoardViewProps {
   onNavigateHome: () => void;
@@ -24,104 +22,53 @@ export function BoardView({ onNavigateHome }: BoardViewProps) {
 
   const currentBoard = getCurrentBoard();
 
+  // Monitor drag and drop globally
   useEffect(() => {
-    if (!currentBoard) return;
-
-    // Set up drag and drop for tasks
-    const cleanup = monitorForElements({
+    return monitorForElements({
       onDrop({ source, location }) {
         const destination = location.current.dropTargets[0];
         if (!destination) return;
 
         const taskId = source.data.taskId as string;
+        const sourceColumnId = source.data.columnId as string;
         const destinationColumnId = destination.data.columnId as string;
-        
-        // Get the column's tasks to determine the drop position
-        const column = state.columns[destinationColumnId];
-        if (!column) return;
 
-        const sourceIndex = column.taskIds.indexOf(taskId);
-        const closestEdge = extractClosestEdge(destination.data);
-        
-        let newOrder = column.taskIds.length;
-        
-        // Calculate new order based on closest edge
-        if (closestEdge) {
-          const targetTaskId = destination.data.taskId as string;
-          const targetIndex = column.taskIds.indexOf(targetTaskId);
-          
-          if (closestEdge === "top") {
-            newOrder = targetIndex;
-          } else {
+        if (!taskId || !destinationColumnId) return;
+
+        const destinationColumn = state.columns[destinationColumnId];
+        if (!destinationColumn) return;
+
+        // Check if dropping on a task or on the column itself
+        const targetTaskId = destination.data.taskId as string;
+        let newOrder = 0;
+
+        if (targetTaskId) {
+          // Dropping on a task - use edge detection
+          const closestEdge = extractClosestEdge(destination.data);
+          const targetIndex = destinationColumn.taskIds.indexOf(targetTaskId);
+
+          if (closestEdge === "bottom") {
             newOrder = targetIndex + 1;
+          } else {
+            newOrder = targetIndex;
           }
-        }
 
-        // Adjust for same column reordering
-        if (sourceIndex !== -1 && sourceIndex < newOrder) {
-          newOrder = Math.max(0, newOrder - 1);
+          // Adjust if moving within same column
+          if (sourceColumnId === destinationColumnId) {
+            const sourceIndex = destinationColumn.taskIds.indexOf(taskId);
+            if (sourceIndex < targetIndex) {
+              newOrder = Math.max(0, newOrder - 1);
+            }
+          }
+        } else {
+          // Dropping on empty column or at the end
+          newOrder = destinationColumn.taskIds.length;
         }
 
         moveTask(taskId, destinationColumnId, newOrder);
       },
     });
-
-    // Set up draggable tasks
-    const taskElements = document.querySelectorAll("[data-task-id]");
-    const taskCleanups: (() => void)[] = [];
-
-    taskElements.forEach((element) => {
-      const taskId = element.getAttribute("data-task-id");
-      if (!taskId) return;
-
-      const dragCleanup = draggable({
-        element: element as HTMLElement,
-        getInitialData: () => ({ taskId }),
-      });
-
-      const dropCleanup = dropTargetForElements({
-        element: element as HTMLElement,
-        getData: ({ input, element }) => {
-          const taskId = element.getAttribute("data-task-id");
-          return attachClosestEdge(
-            {
-              taskId,
-              columnId: state.tasks[taskId!]?.columnId,
-            },
-            {
-              input,
-              element,
-              allowedEdges: ["top", "bottom"],
-            }
-          );
-        },
-      });
-
-      taskCleanups.push(dragCleanup, dropCleanup);
-    });
-
-    // Set up drop targets for columns
-    const columnElements = document.querySelectorAll("[data-column-id]");
-    const columnCleanups: (() => void)[] = [];
-
-    columnElements.forEach((element) => {
-      const columnId = element.getAttribute("data-column-id");
-      if (!columnId) return;
-
-      const cleanup = dropTargetForElements({
-        element: element as HTMLElement,
-        getData: () => ({ columnId }),
-      });
-
-      columnCleanups.push(cleanup);
-    });
-
-    return () => {
-      cleanup();
-      taskCleanups.forEach((fn) => fn());
-      columnCleanups.forEach((fn) => fn());
-    };
-  }, [currentBoard, state.columns, state.tasks, moveTask]);
+  }, [state.columns, moveTask]);
 
   if (!currentBoard) {
     return (

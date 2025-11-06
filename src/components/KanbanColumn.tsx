@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Column, Task, Label } from "@/types";
-import { TaskCard } from "./TaskCard";
+import { DraggableTaskCard } from "./DraggableTaskCard";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Plus, MoreVertical, Pencil, Trash2 } from "lucide-react";
@@ -11,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useKanban } from "@/contexts/KanbanContext";
-import { cn } from "@/lib/utils";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 
 interface KanbanColumnProps {
   column: Column;
@@ -33,8 +34,10 @@ export function KanbanColumn({
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(column.name);
+  const [isDraggedOver, setIsDraggedOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const columnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isAddingTask && inputRef.current) {
@@ -48,6 +51,20 @@ export function KanbanColumn({
       nameInputRef.current.select();
     }
   }, [isEditingName]);
+
+  // Set up column as drop target
+  useEffect(() => {
+    const element = columnRef.current;
+    if (!element) return;
+
+    return dropTargetForElements({
+      element,
+      getData: () => ({ columnId: column.id }),
+      onDragEnter: () => setIsDraggedOver(true),
+      onDragLeave: () => setIsDraggedOver(false),
+      onDrop: () => setIsDraggedOver(false),
+    });
+  }, [column.id]);
 
   const handleAddTask = () => {
     if (newTaskTitle.trim()) {
@@ -77,7 +94,12 @@ export function KanbanColumn({
   });
 
   return (
-    <div className="flex flex-col bg-kanban-column rounded-lg p-3 min-w-[280px] max-w-[280px] h-fit max-h-[calc(100vh-12rem)]">
+    <div
+      ref={columnRef}
+      className={`flex flex-col bg-kanban-column rounded-lg p-3 min-w-[280px] max-w-[280px] h-fit max-h-[calc(100vh-12rem)] transition-all ${
+        isDraggedOver ? "ring-2 ring-primary ring-opacity-50 bg-primary-light" : ""
+      }`}
+    >
       <div className="flex items-center justify-between mb-3">
         {isEditingName ? (
           <Input
@@ -122,12 +144,20 @@ export function KanbanColumn({
         </DropdownMenu>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-2 mb-2 pr-1" data-column-id={column.id}>
+      <div className="flex-1 overflow-y-auto space-y-2 mb-2 pr-1">
         {filteredTasks.map((task) => (
-          <div key={task.id} data-task-id={task.id}>
-            <TaskCard task={task} labels={labels} onClick={() => onTaskClick(task)} />
-          </div>
+          <DraggableTaskCard
+            key={task.id}
+            task={task}
+            labels={labels}
+            onClick={() => onTaskClick(task)}
+          />
         ))}
+        {filteredTasks.length === 0 && (
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            {activeFilters.length > 0 ? "No matching tasks" : "Drop tasks here"}
+          </div>
+        )}
       </div>
 
       {isAddingTask ? (
