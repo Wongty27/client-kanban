@@ -22,10 +22,14 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
+          light: "hsl(var(--primary-light))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          hover: "hsl(var(--secondary-hover))",
+          light: "hsl(var(--secondary-light))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -47,15 +51,22 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        kanban: {
+          board: "hsl(var(--board-bg))",
+          column: "hsl(var(--column-bg))",
+          shadow: "hsl(var(--task-shadow))",
+          drag: "hsl(var(--drag-preview))",
+        },
+        label: {
+          red: "hsl(var(--label-red))",
+          orange: "hsl(var(--label-orange))",
+          yellow: "hsl(var(--label-yellow))",
+          green: "hsl(var(--label-green))",
+          teal: "hsl(var(--label-teal))",
+          blue: "hsl(var(--label-blue))",
+          purple: "hsl(var(--label-purple))",
+          pink: "hsl(var(--label-pink))",
+          gray: "hsl(var(--label-gray))",
         },
       },
       borderRadius: {
