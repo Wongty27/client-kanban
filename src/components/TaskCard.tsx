@@ -1,7 +1,8 @@
 import { Task, Label } from "@/types";
-import { Calendar, MessageSquare, Paperclip } from "lucide-react";
+import { Calendar, MessageSquare, Paperclip, User } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { getLabelColorClass } from "@/lib/labelColors";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 interface TaskCardProps {
   task: Task;
@@ -9,12 +10,21 @@ interface TaskCardProps {
   onClick: () => void;
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export function TaskCard({ task, labels, onClick }: TaskCardProps) {
   const taskLabels = task.labels
     .map((labelId) => labels[labelId])
     .filter(Boolean);
 
-  const hasMeta = task.dueDate || task.attachments.length > 0 || task.comments.length > 0;
+  const hasMeta = task.dueDate || task.attachments.length > 0 || task.comments.length > 0 || task.assignedTo;
 
   return (
     <div
@@ -45,24 +55,33 @@ export function TaskCard({ task, labels, onClick }: TaskCardProps) {
       )}
 
       {hasMeta && (
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          {task.dueDate && (
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-            </div>
-          )}
-          {task.attachments.length > 0 && (
-            <div className="flex items-center gap-1">
-              <Paperclip className="w-3 h-3" />
-              <span>{task.attachments.length}</span>
-            </div>
-          )}
-          {task.comments.length > 0 && (
-            <div className="flex items-center gap-1">
-              <MessageSquare className="w-3 h-3" />
-              <span>{task.comments.length}</span>
-            </div>
+        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3">
+            {task.dueDate && (
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+              </div>
+            )}
+            {task.attachments.length > 0 && (
+              <div className="flex items-center gap-1">
+                <Paperclip className="w-3 h-3" />
+                <span>{task.attachments.length}</span>
+              </div>
+            )}
+            {task.comments.length > 0 && (
+              <div className="flex items-center gap-1">
+                <MessageSquare className="w-3 h-3" />
+                <span>{task.comments.length}</span>
+              </div>
+            )}
+          </div>
+          {task.assignedTo && (
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                {getInitials(task.assignedTo)}
+              </AvatarFallback>
+            </Avatar>
           )}
         </div>
       )}

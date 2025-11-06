@@ -31,6 +31,7 @@ interface KanbanContextType {
   // Settings
   toggleTheme: () => void;
   setActiveFilters: (filters: string[]) => void;
+  setCurrentUser: (userName: string | undefined) => void;
   
   // Utility
   getCurrentBoard: () => Board | null;
@@ -218,6 +219,9 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
       comments: [],
       columnId,
       order,
+      createdAt: new Date().toISOString(),
+      createdBy: state.settings.currentUser,
+      assignedTo: state.settings.currentUser,
     };
 
     setState((prev) => ({
@@ -231,7 +235,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
         },
       },
     }));
-  }, [state.columns]);
+  }, [state.columns, state.settings.currentUser]);
 
   const updateTask = useCallback((id: string, updates: Partial<Task>) => {
     setState((prev) => ({
@@ -368,6 +372,13 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const setCurrentUser = useCallback((userName: string | undefined) => {
+    setState((prev) => ({
+      ...prev,
+      settings: { ...prev.settings, currentUser: userName },
+    }));
+  }, []);
+
   // Utility
   const getCurrentBoard = useCallback(() => {
     if (!state.currentBoardId) return null;
@@ -393,6 +404,7 @@ export function KanbanProvider({ children }: { children: React.ReactNode }) {
     deleteLabel,
     toggleTheme,
     setActiveFilters,
+    setCurrentUser,
     getCurrentBoard,
   };
 

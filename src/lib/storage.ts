@@ -20,7 +20,12 @@ export function getInitialState(): AppState {
         parsed.settings = {
           theme: "light",
           activeFilters: [],
+          currentUser: undefined,
         };
+      }
+      // Ensure currentUser exists in settings
+      if (parsed.settings && !parsed.settings.hasOwnProperty('currentUser')) {
+        parsed.settings.currentUser = undefined;
       }
       return parsed;
     }
@@ -76,6 +81,7 @@ export function getInitialState(): AppState {
         comments: [],
         columnId: todoColId,
         order: 0,
+        createdAt: new Date().toISOString(),
       },
     },
     labels: DEFAULT_LABELS.reduce((acc, label) => {
@@ -85,6 +91,7 @@ export function getInitialState(): AppState {
     settings: {
       theme: "light",
       activeFilters: [],
+      currentUser: undefined,
     },
     currentBoardId: sampleBoardId,
   };

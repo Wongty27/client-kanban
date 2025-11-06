@@ -20,6 +20,7 @@ import {
   X,
   Plus,
   Trash2,
+  User,
 } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -48,6 +49,7 @@ export function TaskModal({ task, open, onClose }: TaskModalProps) {
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [newComment, setNewComment] = useState("");
   const [attachmentName, setAttachmentName] = useState("");
+  const [assignedTo, setAssignedTo] = useState("");
 
   useEffect(() => {
     if (task) {
@@ -55,6 +57,7 @@ export function TaskModal({ task, open, onClose }: TaskModalProps) {
       setDescription(task.description || "");
       setDueDate(task.dueDate ? new Date(task.dueDate) : undefined);
       setSelectedLabels(task.labels);
+      setAssignedTo(task.assignedTo || "");
     }
   }, [task]);
 
@@ -66,6 +69,7 @@ export function TaskModal({ task, open, onClose }: TaskModalProps) {
       description,
       dueDate: dueDate?.toISOString(),
       labels: selectedLabels,
+      assignedTo: assignedTo || undefined,
     });
   };
 
@@ -223,6 +227,27 @@ export function TaskModal({ task, open, onClose }: TaskModalProps) {
                   );
                 })}
               </div>
+            )}
+          </div>
+
+          {/* Assigned To */}
+          <div>
+            <UILabel htmlFor="assignedTo" className="flex items-center gap-2 mb-2">
+              <User className="w-4 h-4" />
+              Assigned To
+            </UILabel>
+            <Input
+              id="assignedTo"
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              onBlur={handleSave}
+              placeholder="Enter name..."
+              className="mt-1"
+            />
+            {task.createdBy && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Created by {task.createdBy}
+              </p>
             )}
           </div>
 

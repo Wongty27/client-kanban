@@ -11,6 +11,7 @@ import {
   Tag,
   Plus,
   Home,
+  User,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -44,6 +45,7 @@ export function Header({ onNavigateHome }: HeaderProps) {
     state,
     toggleTheme,
     setActiveFilters,
+    setCurrentUser,
     createLabel,
     deleteLabel,
     getCurrentBoard,
@@ -52,6 +54,8 @@ export function Header({ onNavigateHome }: HeaderProps) {
   const [newLabelName, setNewLabelName] = useState("");
   const [newLabelColor, setNewLabelColor] = useState<LabelColor>("blue");
   const [showFilterDialog, setShowFilterDialog] = useState(false);
+  const [showUserDialog, setShowUserDialog] = useState(false);
+  const [userName, setUserName] = useState(state.settings.currentUser || "");
 
   const currentBoard = getCurrentBoard();
   const labels = Object.values(state.labels);
@@ -130,6 +134,18 @@ export function Header({ onNavigateHome }: HeaderProps) {
     setActiveFilters(newFilters);
   };
 
+  const handleSaveUser = () => {
+    const trimmedName = userName.trim();
+    setCurrentUser(trimmedName || undefined);
+    setShowUserDialog(false);
+    toast({
+      title: trimmedName ? "User set" : "User cleared",
+      description: trimmedName
+        ? `You are now ${trimmedName}`
+        : "User name has been cleared",
+    });
+  };
+
   const labelColors: LabelColor[] = [
     "red",
     "orange",
@@ -183,6 +199,16 @@ export function Header({ onNavigateHome }: HeaderProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowUserDialog(true)}>
+                  <User className="mr-2 h-4 w-4" />
+                  Set User Name
+                  {state.settings.currentUser && (
+                    <Badge variant="secondary" className="ml-auto text-xs">
+                      {state.settings.currentUser}
+                    </Badge>
+                  )}
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setShowLabelDialog(true)}>
                   <Tag className="mr-2 h-4 w-4" />
@@ -297,6 +323,38 @@ export function Header({ onNavigateHome }: HeaderProps) {
               Clear All
             </Button>
             <Button onClick={() => setShowFilterDialog(false)}>Done</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* User Name Dialog */}
+      <Dialog open={showUserDialog} onOpenChange={setShowUserDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set Your Name</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <UILabel htmlFor="userName">Your Name</UILabel>
+              <Input
+                id="userName"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveUser()}
+                placeholder="Enter your name..."
+                className="mt-1"
+                maxLength={50}
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                This name will be automatically assigned to new tasks you create.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUserDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveUser}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

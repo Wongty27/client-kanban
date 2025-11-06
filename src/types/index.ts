@@ -38,6 +38,9 @@ export interface Task {
   comments: Comment[];
   columnId: string;
   order: number;
+  assignedTo?: string; // User name
+  createdBy?: string; // User name
+  createdAt?: string;
 }
 
 export interface Column {
@@ -63,6 +66,7 @@ export interface AppState {
   settings: {
     theme: "light" | "dark";
     activeFilters: string[]; // label IDs
+    currentUser?: string; // Current user name
   };
   currentBoardId: string | null;
 }
