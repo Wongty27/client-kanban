@@ -1,20 +1,23 @@
 # Welcome to Localboard
 
-## Project Choice
+## 1. Project Choice
 
-The "Team-Ready" Kanban Board
+- The "Team-Ready" Kanban Board
 
-## AI Tools
+## 2. Tools
 
-1. Lovable
+- Use ChatGPT
+  - generate product PRD
+- Lovable
+  - for fast prototyping
+  - good for client-side app
+- Netlify
+  - Hosting
 
-- for fast prototyping
-- good for client-side app
-
-## High Level Approach
+## 3. High Level Approach
 
 1. Use ChatGPT to generate product PRD
-2. attach PRD to Lovable as reference
+2. attach PRD to Lovable as reference and generate React codes
 
 ## Project info
 
